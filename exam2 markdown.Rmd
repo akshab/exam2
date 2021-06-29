@@ -1,0 +1,76 @@
+---
+title: "Exam 2" 
+author: "Aakansha Bagepally"
+output: pdf_document
+---
+
+```{r loading_packages}
+library(readxl)
+library(tidyverse)
+library(WDI)
+library(doBy)
+```
+
+##College Scorecard Questions
+```{r}
+#reading data in
+college_scorecard <- read_excel("2021_exam2_data.xlsx", 
+    sheet = "college_scorecard")
+View(college_scorecard)
+
+#summary stats
+summary(college_scorecard)
+
+#forming smaller scorecard of data measured in 2014 and 2015 on former students who graduated from four-year+ colleges and universities located in Texas and Louisiana
+small_scorecard <- college_scorecard %>% filter(state_abbr == "TX"| state_abbr == "LA") %>% filter(year == 2014 | year == 2015) %>% filter(pred_degree_awarded_ipeds == 3)
+
+#collapsing small_scorecard into even_smaller_scorecard
+even_smaller_scorecard <- small_scorecard %>% 
+  select(state_abbr, count_working) %>%
+  mutate(total = sum(count_working))
+  group_by(state_abbr)
+```
+
+##Avocados
+```{r}
+avocados <- read_excel("2021_exam2_data.xlsx", 
+    sheet = "avocados")
+View(avocados)
+
+#making year column
+avocados$date <- as.Date(avocados$date)
+avocados$year <- as.numeric(format(avocados$date, "%Y"))
+```
+
+##Training
+```{r}
+training <- read_excel("2021_exam2_data.xlsx", 
+    sheet = "training")
+
+#adding an ID number
+training$id = 1:nrow(training)
+
+#reshaping to longer format so all earnings are in one column
+training<- training %>% pivot_longer(cols = starts_with("re"),
+                         names_to = "year",
+                         names_prefix = "re_",
+                         values_to = "real earnings",
+                         values_drop_na = FALSE)
+#summary statistics
+summary(training)
+```
+
+##Titanic
+```{r}
+titanic <- read_excel("2021_exam2_data.xlsx", 
+    sheet = "titanic")
+titanic
+summary(titanic)
+titanic$female[titanic$female == 1] = "female"
+titanic$female[titanic$female == 0] = "male"
+table(titanic$female)
+table(titanic$survived)
+titanic$survived[titanic$survived == 1] = "survived"
+titanic$survived[titanic$survived == 0] = "deceased"
+
+```
