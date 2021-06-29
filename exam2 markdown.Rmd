@@ -9,6 +9,8 @@ library(readxl)
 library(tidyverse)
 library(WDI)
 library(doBy)
+library(lubridate)
+library(ggplot2)
 ```
 
 ##College Scorecard Questions
@@ -26,9 +28,12 @@ small_scorecard <- college_scorecard %>% filter(state_abbr == "TX"| state_abbr =
 
 #collapsing small_scorecard into even_smaller_scorecard
 even_smaller_scorecard <- small_scorecard %>% 
-  select(state_abbr, count_working) %>%
-  mutate(total = sum(count_working))
-  group_by(state_abbr)
+  select(state_abbr, count_working, count_not_working) %>%
+  group_by(state_abbr) %>%
+  na.omit(count_working) %>%
+  summarize(across(where(is.numeric), sum))
+even_smaller_scorecard$percent <- even_smaller_scorecard$count_working/(even_smaller_scorecard$count_not_working + even_smaller_scorecard$count_working)
+ggplot(even_smaller_scorecard, aes(percent), color = state_abbr) + geom_bar()
 ```
 
 ##Avocados
@@ -40,6 +45,11 @@ View(avocados)
 #making year column
 avocados$date <- as.Date(avocados$date)
 avocados$year <- as.numeric(format(avocados$date, "%Y"))
+
+deflated_data = WDI(country = "USA", indicator = c(NY.GDP.DEFL.ZS), start = 1960, end = 1970, extra = FALSE, catch = NULL)
+
+
+collapsed_avocados <- avocados %>% group_by(adjusted_average_price) %>% head(collapsed_avocados)
 ```
 
 ##Training
@@ -72,5 +82,6 @@ table(titanic$female)
 table(titanic$survived)
 titanic$survived[titanic$survived == 1] = "survived"
 titanic$survived[titanic$survived == 0] = "deceased"
-
 ```
+
+Bonus: My Heart Will Go On by Celine Dion
